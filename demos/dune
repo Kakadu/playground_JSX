@@ -1,0 +1,15 @@
+(library
+ (name demo1)
+ (preprocess
+  (pps
+   ppx_inline_test
+   ;-- -pp camlp5/pp5+pa_JSX+dump.exe
+   ;--   -pp   camlp5/pp5+pa_JSX+o.exe
+   ;
+   ))
+ (flags
+  (:standard -dsource))
+ (preprocessor_deps
+  %{project_root}/camlp5/pp5+pa_JSX+dump.exe
+  %{project_root}/camlp5/pp5+pa_JSX+o.exe)
+ (inline_tests))
