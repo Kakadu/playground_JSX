@@ -10,8 +10,13 @@
    ;
    ))
  (flags
-  (:standard -dsource))
+  (:standard
+   ; -dsource
+   ))
  (preprocessor_deps
   %{project_root}/camlp5/pp5+pa_JSX+dump.exe
   %{project_root}/camlp5/pp5+pa_JSX+o.exe)
  (inline_tests))
+
+(cram
+ (deps demo1.ml ../camlp5/pa_JSX.cma ../camlp5/pp5+pa_JSX+o.exe))

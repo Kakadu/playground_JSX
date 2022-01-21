@@ -2,6 +2,9 @@
  (name pa_JSX)
  (public_name pa_JSX)
  (libraries camlp5)
+ ;  (preprocess
+ ;   (action
+ ;    (run camlp5 %{read-lines:../config/camlp5-flags.cfg} %{input-file})))
  (preprocess
   (action
    (run %{workspace_root}/camlp5/pp5+dump.byte %{input-file}))))

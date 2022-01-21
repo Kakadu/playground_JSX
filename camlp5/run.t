@@ -1,7 +1,3 @@
-  $ ls
-  pa_JSX.cma
-  pp5+pa_JSX+o.exe
-  run.t
   $ cat <<EOF > test1.ml
   > let x = 1 in sum x ; x ; 2 end;;
   > EOF
