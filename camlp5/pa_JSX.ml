@@ -3,6 +3,16 @@ open Pcaml
 EXTEND
   GLOBAL: expr ;
   expr: BEFORE "expr1"
+    [ [ "<"; cname = component_name; ">";
+        "</"; cname = component_name; ">" ->
+        <:expr< "wtf" >> ]
+    ];
+  component_name: [[ LIDENT ]];
+END;
+(*
+EXTEND
+  GLOBAL: expr ;
+  expr: BEFORE "expr1"
     [ [ "sum";
         e =
         FOLD0 (fun e1 e2 -> <:expr< $e2$ + $e1$ >>) <:expr< 0 >>
@@ -34,3 +44,4 @@ EXTEND
     ];
   myattr: [ [ LIDENT; "="; expr ]];
 END;
+ *)
