@@ -8,6 +8,6 @@ module MyComponent = struct
 end
 
 (* let _ = <MyComponent foo={bar} /> *)
-let _ = <div> </div>
+let _ = <div></div>
 let _ = <div> </div>
 (* let _ = <div class_="class1"> <img src=""/> </div> *)

@@ -1,13 +1,30 @@
 open Pcaml
+open Format
 
 EXTEND
   GLOBAL: expr ;
   expr: BEFORE "expr1"
-    [ [ "<"; cname = component_name; ">";
-        "</"; cname = component_name; ">" ->
+    [ [ x = html_start -> x ] ] ;
+  html_start:
+    [ [ "<"; cname = component_name; end_of_attrs
+         ->
+        printf "Tag %s finished: %d\n%!" cname __LINE__;
         <:expr< "wtf" >> ]
     ];
-  component_name: [[ LIDENT ]];
+  end_of_attrs:
+    [ [ "></"; cname = component_name; ">" ->
+      printf "Closing %s parsed: %d\n%!" cname __LINE__;
+      () ]
+    | [ ">"; body = OPT html_start; "</"; cname = component_name; ">" ->
+        printf "Closing %s parsed: %d. body = %s\n%!" cname __LINE__
+          (match body with None -> "None" | Some _ -> "Some");
+        ()]
+    ];
+
+  component_name: [[ x = LIDENT ->
+    Format.printf "name '%s' parsed\n%!" x;
+    x
+     ]];
 END;
 (*
 EXTEND
