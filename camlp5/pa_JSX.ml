@@ -1,31 +1,67 @@
 open Pcaml
 open Format
 
+
+
+let check_tag_without_body =
+  let is_ending_tag_f strm =
+    Stream.npeek 1 strm = [("","></")] ||
+    match Stream.npeek 2 strm with
+      | [("", ">"); ("", "</")] -> true
+      | xs ->
+        let open Format in
+        (* Format.printf "is_ending_tag_f says false: %a\n%!"
+          (pp_print_list (fun ppf (a,b) -> fprintf ppf "(%S,%S)" a b ) ~pp_sep:pp_print_space)
+          xs; *)
+        false
+  in
+  Grammar.Entry.of_parser gram "check_closes_no_body"
+    (fun strm -> if is_ending_tag_f strm then () else raise Stream.Failure)
+
+
 EXTEND
   GLOBAL: expr ;
   expr: BEFORE "expr1"
-    [ [ x = html_start -> x ] ] ;
-  html_start:
-    [ [ "<"; cname = component_name; end_of_attrs
+    [ [ x = html -> x ] ] ;
+  html:
+    [ [ "<"; cname = component_name; attrs = attrs; rhs =
+        [ [ check_tag_without_body; [ "></" | ">"; "</"] ; cname2 = component_name; ">" ->
+              Some cname2, [] ]
+        | [ ">"; body = LIST0 html; "</"; cname2 = component_name; ">" ->
+              Some cname2, body ]
+        | [ "/>"  -> None, [] ]
+        ]
          ->
-        printf "Tag %s finished: %d\n%!" cname __LINE__;
-        <:expr< "wtf" >> ]
+          let cname2, body = rhs in
+          let () = match cname2 with
+          | None -> ()
+          | Some cname2 when cname2 <> cname -> raise Stream.Failure
+          | Some _ -> ()
+          in
+          let head = match cname with
+          | `Standard s -> <:expr< $lid:s$ >>
+          | `Custom s -> <:expr< $uid:s$ . createComponent >>
+          in
+          let args = List.fold_left (fun acc x -> <:expr< [ $x$ :: $acc$ ] >>) <:expr< [] >> body in
+          <:expr< $head$ $args$ >>
+      ]
     ];
-  end_of_attrs:
-    [ [ "></"; cname = component_name; ">" ->
-      printf "Closing %s parsed: %d\n%!" cname __LINE__;
-      () ]
-    | [ ">"; body = OPT html_start; "</"; cname = component_name; ">" ->
-        printf "Closing %s parsed: %d. body = %s\n%!" cname __LINE__
-          (match body with None -> "None" | Some _ -> "Some");
-        ()]
+  component_name:
+    [ [ x = LIDENT ->
+        (* Format.printf "name '%s' parsed\n%!" x; *)
+        `Standard x
+      ]
+    | [ x = UIDENT -> `Custom x ]
     ];
-
-  component_name: [[ x = LIDENT ->
-    Format.printf "name '%s' parsed\n%!" x;
-    x
-     ]];
+    myattr:
+      [ [ name = LIDENT; "="; "{"; v = expr; "}" -> (name, v) ]
+      (* | [ name = LIDENT; "="; v = expr  -> (name, v) ] *)
+      ];
+    attrs: [ [ LIST0 myattr ] ];
 END;
+
+
+
 (*
 EXTEND
   GLOBAL: expr ;
